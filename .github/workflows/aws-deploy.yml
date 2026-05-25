@@ -102,14 +102,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: maven
-          cache-dependency-path: backend/pom.xml
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -119,10 +111,14 @@ jobs:
             frontend/admin/package-lock.json
             frontend/menu/package-lock.json
 
-      - name: Setup Maven
+      - name: Setup Maven (Java 21)
         uses: s4u/setup-maven-action@v1.20.0
         with:
+          checkout-enabled: "false"
+          java-version: "21"
+          java-distribution: "temurin"
           maven-version: "3.9.9"
+          cache-path: "~/.m2/repository"
 
       - name: Build Lambda artifacts
         run: bash ml-training/scripts/build_lambda_dists.sh
