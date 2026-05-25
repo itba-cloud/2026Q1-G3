@@ -235,14 +235,7 @@ MIGRATE_LOCAL_STATE=1 bash terraform/scripts/terraform-init-remote.sh
 
 `deploy.sh` usa `backend.hcl` automáticamente si existe.
 
-**CI:** tras el bootstrap, añade en GitHub Secrets (valores de `terraform -chdir=terraform/bootstrap output`):
-
-| Secret | Ejemplo |
-|--------|---------|
-| `TF_STATE_BUCKET` | `menuqr-tfstate-123456789012` |
-| `TF_STATE_DYNAMODB_TABLE` | `menuqr-tf-locks` |
-
-Sin esos secrets el plan en Actions sigue funcionando con `-backend=false` (solo validación de configuración, sin state compartido). El **deploy** los exige solo con `use_remote_backend` activado (valor por defecto).
+**CI:** los mismos valores van a los secrets del repositorio (ver [Secrets del repositorio](#secrets-del-repositorio) y el workflow **Terraform init remote**, que los imprime en el job summary). Ejemplo: `menuqr-tfstate-123456789012`, `menuqr-tf-locks`.
 
 Plantilla: `terraform/backend.hcl.example`.
 
@@ -287,9 +280,22 @@ Renovar los secrets cuando expire la sesión del lab (suelen caducar tras unas h
 
 **Orden recomendado en CI (backend remoto):**
 
-1. Configurar secrets `AWS_*` (Learner Lab).
-2. Ejecutar **Terraform init remote** → copiar `TF_STATE_BUCKET` y `TF_STATE_DYNAMODB_TABLE` al summary del job en los secrets del repo.
+1. Configurar secrets `AWS_*` (Learner Lab) en **Settings → Secrets and variables → Actions → Repository secrets**.
+2. Ejecutar **Terraform init remote** → en el **Summary** del job aparece una tabla con `TF_STATE_BUCKET` y `TF_STATE_DYNAMODB_TABLE`; copiarlos a secrets del repo.
 3. Ejecutar **AWS deploy** (dejar `use_remote_backend` activado).
+
+**Dónde ver las URLs tras el deploy (Actions):**
+
+Al finalizar **AWS deploy**, el paso *Deployment URLs* escribe en el **Summary** del job:
+
+| Recurso | Origen |
+|---------|--------|
+| API backend | `backend_api_url` |
+| Admin SPA (sitio web) | `frontend_admin_website_url` |
+| Menú público (sitio web) | `frontend_menu_website_url` |
+| RDS Proxy | `db_proxy_endpoint` |
+
+Son las URLs HTTP del ALB y de los buckets S3 con website hosting (mismos `terraform output` que en la sección **Outputs útiles** más abajo). Los artefactos estáticos viven en los buckets `frontend_admin_s3_bucket` y `frontend_menu_s3_bucket` (visibles en los logs del paso *Deploy frontends*, no en ese summary).
 
 **Deploy sin backend remoto (solo pruebas):**
 
