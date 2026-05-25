@@ -120,7 +120,7 @@ jobs:
             frontend/menu/package-lock.json
 
       - name: Setup Maven
-        uses: s4u/setup-maven-action@v4.0.0
+        uses: s4u/setup-maven-action@v1.20.0
         with:
           maven-version: "3.9.9"
 
